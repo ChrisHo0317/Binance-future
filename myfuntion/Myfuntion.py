@@ -31,7 +31,7 @@ class Myfuntion :
     def Volatility(cls,df,count = 5,cloumn_name = 'MA'):        #波動度指標
         df_Volatility = df.copy()
         df_Volatility['Difference'] = df_Volatility.apply(lambda x : (x['High']-x['Low']),axis=1)
-        df_Volatility['Difference'] = pd.qcut(df_Volatility["Difference"], 100, labels=[round(i*1,2) for i in range(100)]) 
+        df_Volatility['Difference'] = pd.qcut(df_Volatility["Difference"], 100, labels=[round(i*1,2) for i in range(100)],duplicates='drop') 
         df_Volatility = df_Volatility.rename(columns={'Difference':'close'})
         df_Volatility_result = cls.SMA(df_Volatility,count,column_name ='close',output_column_name = cloumn_name)[['time',cloumn_name]].fillna(method='bfill')
         Volatility_list = list(df_Volatility_result[cloumn_name])[-10:-1]
@@ -43,7 +43,7 @@ class Myfuntion :
     @classmethod
     def transaction_area(cls,df_transaction,count = 5,cloumn_name = 'MA'): # 收盤價區間指標
         df_transaction['price_sum'] = (df_transaction['Close']+(df_transaction['High']+df_transaction['Low']/2))/2
-        df_transaction['price_sum'] = pd.qcut(df_transaction["price_sum"], 100, labels=[round(i*1,2) for i in range(100)]) 
+        df_transaction['price_sum'] = pd.qcut(df_transaction["price_sum"], 100, labels=[round(i*1,2) for i in range(100)],duplicates='drop') 
         transaction_area_list = cls.SMA(df_transaction,count,'price_sum',output_column_name=cloumn_name).fillna(method='bfill')[cloumn_name]
         transaction_area_line = mpf.make_addplot(transaction_area_list, color='blue', panel = 2)
         return transaction_area_line,list(transaction_area_list)[-10:-1]
@@ -60,7 +60,6 @@ class Myfuntion :
         Volatility_line , Volatility_list  = cls.Volatility(df_Currency,20)
         transaction_area_line ,transaction_area_list = cls.transaction_area(df_Currency,20)
         df_Currency.set_index(['time'], inplace=True)
-        # df_Currency.to_csv(os.path.join('D:\BA\Binance_data',f'binance_demo_{Currency}.csv'))
-        mpf.plot(df_Currency, type = 'candle', style = 'binance', title = Currency, addplot = [Volatility_line,transaction_area_line], volume = True)
-            
-        
+        df_Currency.to_csv(f'binance_demo_{Currency}.csv')
+        # mpf.plot(df_Currency, type = 'candle', style = 'binance', title = Currency, addplot = [Volatility_line,transaction_area_line], volume = True)
+
